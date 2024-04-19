@@ -1,6 +1,6 @@
 # IDE
-.idea
-.vscode
+.idea\
+.vscode\
 
 # Install
-.egg-info
+.egg-info\
