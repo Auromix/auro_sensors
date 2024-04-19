@@ -9,6 +9,7 @@ with open("README.md") as readme_file:
 
 requirements = [
     'pyrealsense2'
+    'matplotlib'
 ]
 
 test_requirements = [

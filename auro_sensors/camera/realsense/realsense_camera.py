@@ -108,16 +108,3 @@ class RealsenseCamera:
         """
         depth_sensor = self.profile.get_device().first_depth_sensor()
         return depth_sensor.get_depth_scale()
-
-
-if __name__ == "__main__":
-    camera = RealsenseCamera()
-    color_data = camera.get_color_data()
-    depth_data = camera.get_depth_data()
-    intrinsics = camera.get_camera_intrinsics()
-
-    print("Color data shape:", color_data.shape)
-    print("Depth data shape:", depth_data.shape)
-    print("Depth scale:", camera.depth_scale)
-    print("Camera Intrinsics:")
-    print(intrinsics)
