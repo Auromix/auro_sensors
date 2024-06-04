@@ -11,10 +11,9 @@ class Aruco:
         # Get intrinsics
         self.camera_intrinsics = self.camera.get_intrinsics(
             camera_type='color')
-        self.camera_intrinsics_matrix = np.array([[self.camera_intrinsics.fx, 0, self.camera_intrinsics.ppx], [
-                                                 0, self.camera_intrinsics.fy, self.camera_intrinsics.ppy], [0, 0, 1]])
+        self.camera_intrinsics_matrix = self.camera_intrinsics.get_intrinsics_matrix()
         self.camera_distortion_coefficients = np.array(
-            self.camera_intrinsics.coeffs)
+            self.camera_intrinsics.distortion_coefficients)
 
         self.aruco_detectors = []
 
@@ -111,7 +110,7 @@ class Aruco:
 
 
 if __name__ == '__main__':
-    from auro_sensors.cameras.old_realsense_camera import RealsenseCamera
+    from auro_sensors.cameras.realsense_camera import RealsenseCamera
     camera_config = {
         'serial_number': "",
         'camera_type': 'Realsense D415',
@@ -159,5 +158,4 @@ if __name__ == '__main__':
                 break
 
     finally:
-        my_realsense_camera.stop()
         cv2.destroyAllWindows()

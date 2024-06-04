@@ -88,7 +88,8 @@ class BasicCamera(ABC):
 
     @abstractmethod
     def init_camera(self, camera_config: Dict[str, any]) -> bool:
-        """Initializes the camera with the provided configuration.
+        """
+        Initialize the camera with the provided configuration.
 
         Args:
             camera_config (Dict[str, any]): The configuration dictionary for the camera.
@@ -101,7 +102,8 @@ class BasicCamera(ABC):
 
     @abstractmethod
     def start(self) -> bool:
-        """Starts the camera stream.
+        """
+        Start the camera stream.
 
         Returns:
             bool: True if the camera stream was started successfully, False otherwise.
@@ -110,7 +112,8 @@ class BasicCamera(ABC):
 
     @abstractmethod
     def stop(self) -> bool:
-        """Stops the camera stream.
+        """
+        Stop the camera stream.
 
         Returns:
             bool: True if the camera stream was stopped successfully, False otherwise.
@@ -119,7 +122,8 @@ class BasicCamera(ABC):
 
     @abstractmethod
     def get_current_frames(self) -> Dict[str, np.ndarray]:
-        """Gets the current image frames from the camera.
+        """
+        Get the current image frames from the camera.
 
         Returns:
             Dict[str, np.ndarray]: A dictionary containing the current frames captured by the camera. Keys could be 'color', 'depth', 'ir1', 'ir2', etc.
@@ -128,7 +132,8 @@ class BasicCamera(ABC):
 
     @abstractmethod
     def get_intrinsics(self, camera_type="color") -> CameraIntrinsics:
-        """Gets the camera intrinsics.
+        """
+        Get the camera intrinsics.
 
         Args:
             camera_type (str, optional): The type of camera. Defaults to "color". Only used for multi-camera setups.
@@ -138,7 +143,8 @@ class BasicCamera(ABC):
         raise NotImplementedError("Subclasses must implement this method")
 
     def get_params(self) -> Dict[str, any]:
-        """Gets the camera parameters.
+        """
+        Get the camera parameters.
 
         Returns:
             Dict[str, any]: A dictionary containing the camera parameters.
@@ -146,7 +152,8 @@ class BasicCamera(ABC):
         raise NotImplementedError("Not implemented yet")
 
     def set_params(self, params: Dict[str, any]) -> bool:
-        """Sets the camera parameters.
+        """
+        Set the camera parameters.
 
         Args:
             params (Dict[str, any]): A dictionary containing the camera parameters to set.
@@ -157,7 +164,8 @@ class BasicCamera(ABC):
         raise NotImplementedError("Not implemented yet")
 
     def save_data(self, data: np.ndarray, name: str, prefix: str = "", suffix: str = ".png") -> bool:
-        """Saves the camera data to a file.
+        """
+        Save the camera data to a file.
 
         Args:
             data (np.ndarray): The data to save.

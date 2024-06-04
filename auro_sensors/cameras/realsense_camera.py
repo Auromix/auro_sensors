@@ -26,20 +26,19 @@ import numpy as np
 import cv2
 import os
 import imageio
-import time
 from typing import List, Dict, Optional
 
 from auro_utils.loggers.logger import Logger
 
-from basic_camera import BasicCamera
-from basic_camera import CameraIntrinsics
+from .basic_camera import BasicCamera
+from .basic_camera import CameraIntrinsics
 
 
 class RealsenseCamera(BasicCamera):
-    def __init__(self, camera_config: dict, logger: Logger = None):
+    def __init__(self, camera_config: dict, log_level='info', logger: Logger = None):
         # Init logger
         if logger is None:
-            self.logger = Logger(log_level="debug")
+            self.logger = Logger(log_level=log_level)
         else:
             self.logger = logger
 
@@ -52,7 +51,8 @@ class RealsenseCamera(BasicCamera):
         self.stop()
 
     def init_camera(self, camera_config: Dict[str, any]) -> bool:
-        """Initializes the camera with the provided configuration.
+        """
+        Initialize the camera with the provided configuration.
 
         Args:
             camera_config (Dict[str, any]): The configuration dictionary for the camera.
@@ -145,7 +145,8 @@ class RealsenseCamera(BasicCamera):
         return True
 
     def start(self) -> bool:
-        """Starts the camera stream.
+        """
+        Start the camera stream.
 
         Returns:
             bool: True if the camera stream was started successfully, False otherwise.
@@ -163,7 +164,8 @@ class RealsenseCamera(BasicCamera):
             raise
 
     def stop(self) -> bool:
-        """Stops the camera stream.
+        """
+        Stop the camera stream.
 
         Returns:
             bool: True if the camera stream was stopped successfully, False otherwise.
@@ -171,10 +173,18 @@ class RealsenseCamera(BasicCamera):
         try:
             if self.pipeline and self.camera_started:
                 self.pipeline.stop()
+                self.camera_started = False
+
+                # Reset camera
+                self.logger.log_debug("Resetting camera device...")
+                ctx = rs.context()
+                devices = ctx.query_devices()
+                for dev in devices:
+                    dev.hardware_reset()
+                self.logger.log_debug("Camera device reset.")
                 self.logger.log_info(
                     f"{self.camera_config['camera_type']} stopped."
                 )
-                self.camera_started = False
                 return True
             else:
                 self.logger.log_warning(
@@ -186,7 +196,8 @@ class RealsenseCamera(BasicCamera):
             raise
 
     def get_current_frames(self) -> Dict[str, np.ndarray]:
-        """Gets the current image frames from the camera.
+        """
+        Get the current image frames from the camera.
 
         Returns:
             Dict[str, np.ndarray]: A dictionary containing the current frames captured by the camera. Keys could be 'color', 'depth', 'ir1', 'ir2', etc.
@@ -212,9 +223,25 @@ class RealsenseCamera(BasicCamera):
 
         return current_frames
 
+    def get_color(self, bgr2rgb: bool = False) -> np.ndarray:
+        """
+        Get the color frame data from the camera.
+
+        Args:
+            bgr2rgb (bool): Whether to convert BGR to RGB. Defaults to False.
+
+        Returns:
+            np.ndarray: The color frame data.
+        """
+        frames = self.get_current_frames()
+        data = frames["color"]
+        if bgr2rgb:
+            data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        return data
+
     def get_depth(self, clip: Optional[float] = None, scale: Optional[float] = None) -> np.ndarray:
         """
-        Gets the depth frame data from the camera.
+        Get the depth frame data from the camera.
 
         Args:
             clip (Optional[float]): Maximum depth value to clip to, in meters. Defaults to None.
@@ -237,25 +264,9 @@ class RealsenseCamera(BasicCamera):
 
         return data
 
-    def get_color(self, bgr2rgb: bool = False) -> np.ndarray:
-        """
-        Gets the color frame data from the camera.
-
-        Args:
-            bgr2rgb (bool): Whether to convert BGR to RGB. Defaults to False.
-
-        Returns:
-            np.ndarray: The color frame data.
-        """
-        frames = self.get_current_frames()
-        data = frames["color"]
-        if bgr2rgb:
-            data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-        return data
-
     def get_ir(self, ir: int = 1) -> np.ndarray:
         """
-        Gets the infrared frame data from the camera.
+        Get the infrared frame data from the camera.
 
         Args:
             ir (int): Infrared channel to retrieve (1 or 2). Defaults to 1.
@@ -272,7 +283,8 @@ class RealsenseCamera(BasicCamera):
         return data
 
     def get_intrinsics(self, camera_type="color") -> CameraIntrinsics:
-        """Gets the camera intrinsics.
+        """
+        Get the camera intrinsics.
 
         Args:
             camera_type (str, optional): The type of camera. Defaults to "color". Only used for multi-camera setups.
@@ -304,8 +316,30 @@ class RealsenseCamera(BasicCamera):
                                              ppx=intrinsics.ppx, ppy=intrinsics.ppy, distortion_coefficients=intrinsics.coeffs, distortion_model=intrinsics.model)
         return camera_intrinsics
 
+    def get_params(self) -> Dict[str, any]:
+        # TODO@Herman Ye
+        """Gets the camera parameters.
+
+        Returns:
+            Dict[str, any]: A dictionary containing the camera parameters.
+        """
+        raise NotImplementedError("Not implemented yet")
+
+    def set_params(self, params: Dict[str, any]) -> bool:
+        # TODO@Herman Ye
+        """Sets the camera parameters.
+
+        Args:
+            params (Dict[str, any]): A dictionary containing the camera parameters to set.
+
+        Returns:
+            bool: True if the parameters were set successfully, False otherwise.
+        """
+        raise NotImplementedError("Not implemented yet")
+
     def save_data(self, data: np.ndarray, name: str, prefix: str = "", suffix: str = ".png") -> bool:
-        """Saves the camera data to a file.
+        """
+        Save the camera data to a file.
 
         Args:
             data (np.ndarray): The data to save.
@@ -334,18 +368,15 @@ class RealsenseCamera(BasicCamera):
                     f"Creating directory: {self.camera_data_save_directory}")
                 os.makedirs(self.camera_data_save_directory)
 
-            # self.logger.log_debug(
-            #     f"Camera data save directory: {self.camera_data_save_directory}")
-
             full_path = os.path.join(
                 self.camera_data_save_directory, f"{prefix}{name}{suffix}")
 
             imageio.imwrite(full_path, data)
-            self.logger.log_debug(
-                f"Saved {prefix}_{name}{suffix} to {full_path}.")
+            self.logger.log_info(
+                f"Saved {prefix}{name}{suffix} to {full_path}.")
         except BaseException as e:
             self.logger.log_error(
-                f"Failed to save {prefix}_{name}{suffix} to {full_path}.")
+                f"Failed to save {prefix}{name}{suffix} to {full_path}.")
             self.logger.log_error(e)
             return False
         return True
@@ -377,6 +408,32 @@ def example_get_intrinsics():
     print(distortion_coefficients)
     matrix = intrinsics.get_intrinsics_matrix()
     print(matrix)
+
+
+def example_save_data():
+    camera_config = {
+        'serial_number': "",
+        'camera_type': 'Realsense D415',
+        'camera_data_save_directory': "",
+        'width': 1280,
+        'height': 720,
+        'fps': 30,
+        'color_format': 'bgr8',
+        'depth_format': 'z16',
+        'ir_format': 'y8',
+    }
+
+    my_realsense_camera = RealsenseCamera(camera_config)
+
+    color = my_realsense_camera.get_color(bgr2rgb=True)
+    depth = my_realsense_camera.get_depth()
+    ir1 = my_realsense_camera.get_ir(ir=1)
+    ir2 = my_realsense_camera.get_ir(ir=2)
+    # Save data
+    my_realsense_camera.save_data(data=color, name='color')
+    my_realsense_camera.save_data(data=depth, name='depth')
+    my_realsense_camera.save_data(data=ir1, name='ir1')
+    my_realsense_camera.save_data(data=ir2, name='ir2')
 
 
 def example_display_video():
@@ -438,37 +495,8 @@ def example_display_video():
     except Exception as e:
         my_realsense_camera.logger.log_error(f"An error occurred: {str(e)}")
     finally:
-        # # Stop the camera
-        # my_realsense_camera.stop()
         # Destroy all OpenCV windows
         cv2.destroyAllWindows()
-
-
-def example_save_data():
-    camera_config = {
-        'serial_number': "",
-        'camera_type': 'Realsense D415',
-        'camera_data_save_directory': "",
-        'width': 1280,
-        'height': 720,
-        'fps': 30,
-        'color_format': 'bgr8',
-        'depth_format': 'z16',
-        'ir_format': 'y8',
-    }
-
-    my_realsense_camera = RealsenseCamera(camera_config)
-
-    frames = my_realsense_camera.get_current_frames()
-    color = my_realsense_camera.get_color(bgr2rgb=True)
-    depth = my_realsense_camera.get_depth()
-    ir1 = my_realsense_camera.get_ir(ir=1)
-    ir2 = my_realsense_camera.get_ir(ir=2)
-    # Save data
-    my_realsense_camera.save_data(data=color, name='color')
-    my_realsense_camera.save_data(data=depth, name='depth')
-    my_realsense_camera.save_data(data=ir1, name='ir1')
-    my_realsense_camera.save_data(data=ir2, name='ir2')
 
 
 if __name__ == '__main__':

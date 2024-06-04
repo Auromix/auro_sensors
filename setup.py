@@ -8,8 +8,13 @@ with open("README.md") as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    'pyrealsense2'
-    'matplotlib'
+    'auro_utils',
+    'pyrealsense2>=2.54',
+    'matplotlib>=3.7',
+    'imageio>=2.34',
+    'transforms3d>=0.4',
+    'opencv-contrib-python>=4.9',
+    'opencv-python>=4.9'
 ]
 
 test_requirements = [
@@ -38,6 +43,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/Auromix/auro_sensors",
-    version="0.0.1",
+    version="0.0.2",
     zip_safe=False,
 )

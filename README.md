@@ -1,6 +1,6 @@
 # Auro Sensors
 
-sensors for auromix application.
+Auro Sensors is a Python library for interfacing with various sensors and sensor utilities.
 
 # Install
 
@@ -14,6 +14,20 @@ pip install auro_sensors
 
 ### Realsense Camera
 
+Realsense camera SDK wrapper.
+
 ```bash
-python auro_sensors/examples/camera/realsense/realsense_camera.py
+python examples/cameras/example_realsense_camera.py
 ```
+
+## Utils
+
+### Aruco
+
+Aruco marker detection and pose estimation.
+
+```bash
+python examples/utils/example_aruco.py
+```
+
+`
