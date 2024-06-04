@@ -29,5 +29,3 @@ Aruco marker detection and pose estimation.
 ```bash
 python examples/utils/example_aruco.py
 ```
-
-`
